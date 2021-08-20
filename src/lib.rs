@@ -119,6 +119,7 @@ pub mod builder {
         pub use crate::tags::media_segment::date_range::ExtXDateRangeBuilder;
 
         // media playlist
+        pub use crate::tags::media_playlist::server_control::ExtXServerControlBuilder;
     }
 
     /// Builder structs for types

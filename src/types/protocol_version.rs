@@ -16,6 +16,8 @@ pub enum ProtocolVersion {
     V5,
     V6,
     V7,
+    V8,
+    V9,
 }
 
 impl ProtocolVersion {
@@ -30,7 +32,7 @@ impl ProtocolVersion {
     /// ```
     #[must_use]
     #[inline]
-    pub const fn latest() -> Self { Self::V7 }
+    pub const fn latest() -> Self { Self::V9 }
 }
 
 impl fmt::Display for ProtocolVersion {
@@ -43,6 +45,8 @@ impl fmt::Display for ProtocolVersion {
             Self::V5 => write!(f, "5"),
             Self::V6 => write!(f, "6"),
             Self::V7 => write!(f, "7"),
+            Self::V8 => write!(f, "8"),
+            Self::V9 => write!(f, "9"),
         }
     }
 }
@@ -60,6 +64,8 @@ impl FromStr for ProtocolVersion {
                 "5" => Self::V5,
                 "6" => Self::V6,
                 "7" => Self::V7,
+                "8" => Self::V8,
+                "9" => Self::V9,
                 _ => return Err(Error::unknown_protocol_version(input)),
             }
         })
@@ -108,6 +114,6 @@ mod tests {
 
     #[test]
     fn test_latest() {
-        assert_eq!(ProtocolVersion::latest(), ProtocolVersion::V7);
+        assert_eq!(ProtocolVersion::latest(), ProtocolVersion::V9);
     }
 }

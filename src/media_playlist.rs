@@ -12,8 +12,8 @@ use crate::line::{Line, Lines, Tag};
 use crate::media_segment::MediaSegment;
 use crate::tags::{
     ExtM3u, ExtXByteRange, ExtXDiscontinuitySequence, ExtXEndList, ExtXIFramesOnly,
-    ExtXIndependentSegments, ExtXKey, ExtXMediaSequence, ExtXStart, ExtXTargetDuration,
-    ExtXVersion,
+    ExtXIndependentSegments, ExtXKey, ExtXMediaSequence, ExtXServerControl, ExtXSkip, ExtXStart,
+    ExtXTargetDuration, ExtXVersion,
 };
 use crate::types::{
     DecryptionKey, EncryptionMethod, InitializationVector, KeyFormat, PlaylistType, ProtocolVersion,
@@ -125,6 +125,20 @@ pub struct MediaPlaylist<'a> {
     /// `Duration::from_secs(0)`.
     #[builder(default = "Duration::from_secs(0)")]
     pub allowable_excess_duration: Duration,
+    /// Indicates number of Media Segments skipped in a delta update.
+    ///
+    /// ### Note
+    ///
+    /// This field is optional.
+    #[builder(default, setter(into))]
+    pub skip_segment: Option<ExtXSkip>,
+    /// Indicates supported Delivery Directives.
+    ///
+    /// ### Note
+    ///
+    /// This field is optional.
+    #[builder(default, setter(into))]
+    pub server_control: Option<ExtXServerControl>,
     /// A list of unknown tags.
     ///
     /// ### Note
@@ -368,6 +382,8 @@ impl<'a> MediaPlaylistBuilder<'a> {
             allowable_excess_duration: self
                 .allowable_excess_duration
                 .unwrap_or_else(|| Duration::from_secs(0)),
+            server_control: self.server_control.unwrap_or(None),
+            skip_segment: self.skip_segment.unwrap_or(None),
             unknown: self.unknown.clone().unwrap_or_else(Vec::new),
         })
     }
@@ -390,7 +406,9 @@ impl<'a> RequiredVersion for MediaPlaylistBuilder<'a> {
                 .athen_some(ExtXIndependentSegments),
             self.start,
             self.has_end_list.unwrap_or(false).athen_some(ExtXEndList),
-            self.segments
+            self.segments,
+            self.server_control,
+            self.skip_segment
         ]
     }
 }
@@ -432,6 +450,8 @@ impl<'a> MediaPlaylist<'a> {
                     .collect()
             },
             allowable_excess_duration: self.allowable_excess_duration,
+            server_control: self.server_control,
+            skip_segment: self.skip_segment,
             unknown: {
                 self.unknown
                     .into_iter()
@@ -455,7 +475,9 @@ impl<'a> RequiredVersion for MediaPlaylist<'a> {
                 .athen_some(ExtXIndependentSegments),
             self.start,
             self.has_end_list.athen_some(ExtXEndList),
-            self.segments
+            self.segments,
+            self.server_control,
+            self.skip_segment
         ]
     }
 }
@@ -495,6 +517,14 @@ impl<'a> fmt::Display for MediaPlaylist<'a> {
         }
 
         if let Some(value) = &self.start {
+            writeln!(f, "{}", value)?;
+        }
+
+        if let Some(value) = &self.server_control {
+            writeln!(f, "{}", value)?;
+        }
+
+        if let Some(value) = &self.skip_segment {
             writeln!(f, "{}", value)?;
         }
 
