@@ -520,6 +520,7 @@ impl<'a> TryFrom<&'a str> for MasterPlaylist<'a> {
                         | Tag::ExtXDiscontinuitySequence(_)
                         | Tag::ExtXEndList(_)
                         | Tag::PlaylistType(_)
+                        | Tag::ExtXPrefetch(_)
                         | Tag::ExtXIFramesOnly(_) => {
                             return Err(Error::unexpected_tag(tag));
                         }

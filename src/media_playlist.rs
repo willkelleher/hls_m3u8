@@ -12,8 +12,8 @@ use crate::line::{Line, Lines, Tag};
 use crate::media_segment::MediaSegment;
 use crate::tags::{
     ExtM3u, ExtXByteRange, ExtXDiscontinuitySequence, ExtXEndList, ExtXIFramesOnly,
-    ExtXIndependentSegments, ExtXKey, ExtXMediaSequence, ExtXStart, ExtXTargetDuration,
-    ExtXVersion,
+    ExtXIndependentSegments, ExtXKey, ExtXMediaSequence, ExtXPrefetch, ExtXStart,
+    ExtXTargetDuration, ExtXVersion,
 };
 use crate::types::{
     DecryptionKey, EncryptionMethod, InitializationVector, KeyFormat, PlaylistType, ProtocolVersion,
@@ -125,6 +125,13 @@ pub struct MediaPlaylist<'a> {
     /// `Duration::from_secs(0)`.
     #[builder(default = "Duration::from_secs(0)")]
     pub allowable_excess_duration: Duration,
+    /// A list of all [`ExtXPrefetch`]s.
+    ///
+    /// ### Note
+    ///
+    /// This field is optional.
+    #[builder(default, setter(into))]
+    pub prefetch_segments: Vec<ExtXPrefetch<'a>>,
     /// A list of unknown tags.
     ///
     /// ### Note
@@ -368,6 +375,7 @@ impl<'a> MediaPlaylistBuilder<'a> {
             allowable_excess_duration: self
                 .allowable_excess_duration
                 .unwrap_or_else(|| Duration::from_secs(0)),
+            prefetch_segments: self.prefetch_segments.clone().unwrap_or(vec![]),
             unknown: self.unknown.clone().unwrap_or_else(Vec::new),
         })
     }
@@ -432,6 +440,12 @@ impl<'a> MediaPlaylist<'a> {
                     .collect()
             },
             allowable_excess_duration: self.allowable_excess_duration,
+            prefetch_segments: {
+                self.prefetch_segments
+                    .into_iter()
+                    .map(|p| p.into_owned())
+                    .collect()
+            },
             unknown: {
                 self.unknown
                     .into_iter()
@@ -577,6 +591,7 @@ fn parse_media_playlist<'a>(
     let mut has_partial_segment = false;
     let mut has_discontinuity_tag = false;
     let mut unknown = vec![];
+    let mut prefetch_segments= vec![];
     let mut available_keys = HashSet::new();
 
     for line in Lines::from(input) {
@@ -695,6 +710,7 @@ fn parse_media_playlist<'a>(
                         builder.start(t);
                     }
                     Tag::ExtXVersion(_) => {}
+                    Tag::ExtXPrefetch(p) => prefetch_segments.push(p),
                     Tag::Unknown(s) => {
                         // [6.3.1. General Client Responsibilities]
                         // > ignore any unrecognized tags.
@@ -720,6 +736,7 @@ fn parse_media_playlist<'a>(
 
     builder.unknown(unknown);
     builder.segments(segments);
+    builder.prefetch_segments(prefetch_segments);
     builder.build().map_err(Error::builder)
 }
 

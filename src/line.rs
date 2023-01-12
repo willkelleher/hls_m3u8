@@ -79,6 +79,7 @@ pub(crate) enum Tag<'a> {
     ExtXIndependentSegments(tags::ExtXIndependentSegments),
     ExtXStart(tags::ExtXStart),
     VariantStream(tags::VariantStream<'a>),
+    ExtXPrefetch(tags::ExtXPrefetch<'a>),
     Unknown(&'a str),
 }
 
@@ -128,6 +129,8 @@ impl<'a> TryFrom<&'a str> for Tag<'a> {
             TryFrom::try_from(input).map(Self::ExtXIndependentSegments)
         } else if input.starts_with(tags::ExtXStart::PREFIX) {
             TryFrom::try_from(input).map(Self::ExtXStart)
+        } else if input.starts_with(tags::ExtXPrefetch::PREFIX) {
+            TryFrom::try_from(input).map(Self::ExtXPrefetch)
         } else {
             Ok(Self::Unknown(input))
         }
