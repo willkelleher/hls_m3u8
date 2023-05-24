@@ -9,5 +9,6 @@ pub(crate) use discontinuity_sequence::*;
 pub(crate) use end_list::*;
 pub(crate) use i_frames_only::*;
 pub(crate) use media_sequence::*;
-pub(crate) use prefetch::*;
 pub(crate) use target_duration::*;
+
+pub use prefetch::*;
