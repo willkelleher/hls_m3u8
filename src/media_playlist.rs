@@ -484,9 +484,7 @@ impl<'a> fmt::Display for MediaPlaylist<'a> {
 
         writeln!(f, "{}", ExtXTargetDuration(self.target_duration))?;
 
-        if self.media_sequence != 0 {
-            writeln!(f, "{}", ExtXMediaSequence(self.media_sequence))?;
-        }
+        writeln!(f, "{}", ExtXMediaSequence(self.media_sequence))?;
 
         if self.discontinuity_sequence != 0 {
             writeln!(
@@ -591,7 +589,7 @@ fn parse_media_playlist<'a>(
     let mut has_partial_segment = false;
     let mut has_discontinuity_tag = false;
     let mut unknown = vec![];
-    let mut prefetch_segments= vec![];
+    let mut prefetch_segments = vec![];
     let mut available_keys = HashSet::new();
 
     for line in Lines::from(input) {
