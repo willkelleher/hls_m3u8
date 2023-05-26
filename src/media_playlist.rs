@@ -565,6 +565,10 @@ impl<'a> fmt::Display for MediaPlaylist<'a> {
             write!(f, "{}", segment)?;
         }
 
+        for segment in &self.prefetch_segments {
+            writeln!(f, "{}", segment)?;
+        }
+
         for value in &self.unknown {
             writeln!(f, "{}", value)?;
         }
